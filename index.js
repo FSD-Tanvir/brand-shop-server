@@ -41,7 +41,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/update/:id", async (req, res) => {
+    app.get("/products/update/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const product = await productCollection.findOne(query);
@@ -54,7 +54,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/update/:id", async (req, res) => {
+    app.put("/products/update/:id", async (req, res) => {
       const id = req.params.id;
       const product = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -79,25 +79,31 @@ async function run() {
       res.send(result);
     });
 
-    // app.get("/myCart", async (req, res) => {
-    //   const cursor = myCartCollection.find();
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // });
+    app.get("/myCart", async (req, res) => {
+      const cursor = myCartCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
-    // app.get("/myCart/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: id };
-    //   const product = await myCartCollection.findOne(query);
-    //   res.send(product);
-    //   console.log(id, product);
-    // });
+    app.get("/myCart/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const product = await myCartCollection.findOne(query);
+      res.send(product);
+    });
 
-    // app.post("/myCart", async (req, res) => {
-    //   const product = req.body;
-    //   const result = await myCartCollection.insertOne(product);
-    //   res.send(result);
-    // });
+    app.delete("/myCart/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const result = await myCartCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.post("/myCart", async (req, res) => {
+      const product = req.body;
+      const result = await myCartCollection.insertOne(product);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

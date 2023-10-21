@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const app = express();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 //middleware
@@ -28,11 +28,24 @@ async function run() {
     const productCollection = client.db("productDB").collection("products");
     const myCartCollection = client.db("productDB").collection("myCart");
 
-    app.get("/products/:brandName", async (req, res) => {
-      const brand = req.params.brandName.toLowerCase();
-      const query = { brand: brand };
-      const products = await productCollection.find(query).toArray();
-      res.send(products);
+    // app.get("/products/:brandName", async (req, res) => {
+    //   const brand = req.params.brandName.toLowerCase();
+    //   const query = { brand: brand };
+    //   const products = await productCollection.find(query).toArray();
+    //   res.send(products);
+    // });
+
+    app.get("/products", async (req, res) => {
+      const cursor = productCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get("/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const product = await productCollection.findOne(query);
+      res.send(product);
     });
 
     app.post("/products", async (req, res) => {
@@ -41,17 +54,50 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/myCart", async (req, res) => {
-      const cursor = myCartCollection.find();
-      const result = await cursor.toArray();
+    app.put("/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const product = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedProduct = {
+        $set: {
+          name: product.name,
+          image: product.image,
+          brand: product.brand,
+          type : product.type,
+          price : product.price,
+          rating: product.rating,
+          description: product.description,
+        },
+      };
+      const result = await productCollection.updateOne(
+        filter,
+        updatedProduct,
+        options
+
+      );
       res.send(result);
     });
 
-    app.post("/myCart", async (req, res) => {
-      const product = req.body;
-      const result = await myCartCollection.insertOne(product);
-      res.send(result);
-    });
+    // app.get("/myCart", async (req, res) => {
+    //   const cursor = myCartCollection.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
+    // app.get("/myCart/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: id };
+    //   const product = await myCartCollection.findOne(query);
+    //   res.send(product);
+    //   console.log(id, product);
+    // });
+
+    // app.post("/myCart", async (req, res) => {
+    //   const product = req.body;
+    //   const result = await myCartCollection.insertOne(product);
+    //   res.send(result);
+    // });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
